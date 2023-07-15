@@ -3,12 +3,12 @@ const express = require('express');
 const router = express.Router();
 const db = require('../Database/MySql');
 const jwt=require("jsonwebtoken")
-
-router.post('/messages', (req, res) => {
-  const { sender, to_user, message } = req.body;
+const Authorization=require("../middleware/Authentication")
+router.post('/messages',Authorization, (req, res) => {
+  const { sender, to_user, message ,id} = req.body;
   console.log(sender);
-  const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`) VALUES (?, ?, ?)';
-  db.query(sql, [sender, to_user, message], (err, result) => {
+  const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`,`sender_id`) VALUES (?, ?, ?,?)';
+  db.query(sql, [sender, to_user, message,id], (err, result) => {
     if (err) {
       console.error('Error creating message:', err);
       res.status(500).json({ error: 'Internal server error' });
@@ -17,6 +17,18 @@ router.post('/messages', (req, res) => {
     res.json({ message: 'Message created successfully' });
   });
 });
+router.get('/messages', Authorization,(req, res) => {
+  const sql = 'SELECT * FROM chat WHERE sender_id =?';
+  db.query(sql,[req.body.id], (err, result) => {
+    if (err) {
+      console.error('Error retrieving messages:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    res.json({ messages: result });
+  });
+});
+
 router.post('/signup', async (req, res) => {
     const { Name, email, password, state, country } = req.body;
     const EmailCheckQuery = "SELECT COUNT(*) AS count FROM users WHERE email = ?";
@@ -57,7 +69,7 @@ router.post('/signup', async (req, res) => {
     if(!CheckEmail){
      return res.status(401).json({msg:"wrong Credentials"})
     }
-    return res.status(200).json({msg:"Login Successfull",token:jwt.sign({id:result.id},process.env.JWT_PRIVATEKEY)})
+    return res.status(200).json({msg:"Login Successfull",token:jwt.sign({id:result[0].primaryKey},process.env.JWT_PRIVATEKEY)})
     });
   });
 module.exports = router;
