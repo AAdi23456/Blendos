@@ -11,6 +11,7 @@ if(!CheckToken){
 return req.status(401).json({error:"Unauthorized"})
 }
 req.body.id=CheckToken.id
+req.body.sender=CheckToken.sender
 next()
     } catch (error) {
         console.log(error);

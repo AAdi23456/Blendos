@@ -1,16 +1,16 @@
 // server.js
 const express = require('express');
-const routes = require('./Routes/messages');
-
+const MessagesRoutes = require('./Routes/messages');
+const UserRoutes=require("./Routes/users")
 const app = express();
 
-// Middleware
+
 app.use(express.json());
 
-// Register API routes
-app.use('/api', routes);
+app.use("/",MessagesRoutes)
+app.use('/auth', UserRoutes);
 
-// Start the server
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
