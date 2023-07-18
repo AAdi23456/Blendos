@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Chat Template</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    
+    .chat-container {
+      max-width: 400px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    
+    .chat-header {
+      background-color: #075e54;
+      color: #fff;
+      padding: 10px;
+      font-weight: bold;
+    }
+    
+    .chat-messages {
+      padding: 10px;
+      background-color: #f2f2f2;
+    }
+    
+    .message {
+      margin-bottom: 10px;
+    }
+    
+    .message .sender {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .message .content {
+      padding: 8px;
+      background-color: #fff;
+      border-radius: 5px;
+    }
+    
+    .message .time {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .chat-input {
+      display: flex;
+      align-items: center;
+      background-color: #fff;
+      padding: 10px;
+    }
+    
+    .chat-input input {
+      flex-grow: 1;
+      border: none;
+      outline: none;
+      padding: 8px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    
+    .chat-input button {
+      background-color: #075e54;
+      color: #fff;
+      border: none;
+      outline: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      WhatsApp Chat
+    </div>
+    <div class="chat-messages">
+      <div class="message">
+        <div class="sender">John</div>
+        <div class="content">
+          Hello, how are you?
+          <div class="time">10:00 AM</div>
+        </div>
+      </div>
+      <div class="message">
+        <div class="sender">Mary</div>
+        <div class="content">
+          Hi John! I'm doing great. How about you?
+          <div class="time">10:05 AM</div>
+        </div>
+      </div>
+      <!-- Add more messages here -->
+    </div>
+    <div class="chat-input">
+      <input type="text" placeholder="Type your message">
+      <button>Send</button>
+    </div>
+  </div>
+</body>
+
+</html>

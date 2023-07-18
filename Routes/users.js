@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken")
 
 router.post('/signup', async (req, res) => {
     const { Name, email, password, state, country } = req.body;
+    //console.log(req.body);
     const EmailCheckQuery = "SELECT COUNT(*) AS count FROM users WHERE email = ?";
     db.query(EmailCheckQuery, [email], async (err, result) => {
         if (err) {
@@ -13,7 +14,7 @@ router.post('/signup', async (req, res) => {
             return res.status(500).json({ msg: "Internal server error" });
         }
         if (result[0].count > 0) {
-            return res.status(401).json({ msg: "Email is already exists" });
+            return res.status(400).json({ msg: "Email is already exists" });
         }
         const Hashedpassword = await bcrypt.hash(password, 8);
 
@@ -44,7 +45,8 @@ router.post('/login', async (req, res) => {
         if (!CheckEmail) {
             return res.status(401).json({ msg: "wrong Credentials" })
         }
-        return res.status(200).json({ msg: "Login Successfull", token: jwt.sign({ id: result[0].id, sender: result[0].name }, process.env.JWT_PRIVATEKEY) })
+        console.log(CheckEmail);
+        return res.status(200).json({ msg: "Login Successfull", token: jwt.sign({ id: result[0].id, sender: result[0].name }, process.env.JWT_PRIVATEKEY),name:result[0].name })
     });
 });
 module.exports = router

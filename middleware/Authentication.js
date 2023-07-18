@@ -4,6 +4,9 @@ require("dotenv").config()
 const Authorization=(req,res,next)=>{
     try {
     const {token}=req.headers
+    if(!token){
+        return res.status(400).json({msg:"Please provide the token"})
+    }
     console.log(token);
 const CheckToken=jwt.verify(token,process.env.JWT_PRIVATEKEY)
 console.log(CheckToken);

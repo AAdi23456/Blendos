@@ -34,9 +34,9 @@ router.get('/messages', Authorization, (req, res) => {
       return;
     }
 
-    for (let i = 0; i < result.length; i++) {
-      result[i].message = decryptMessage(result[i].message, recipientKeyPair.privateKey);
-    }
+    // for (let i = 0; i < result.length; i++) {
+    //   result[i].message = decryptMessage(result[i].message, recipientKeyPair.privateKey);
+    // }
     res.json({ messages: result });
   });
 });
