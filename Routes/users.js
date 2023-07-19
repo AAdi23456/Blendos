@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
             return res.status(500).json({ msg: "Internal server error" });
         }
         console.log(result);
-        if (!result[0].email) {
+        if (!result.length) {
             return res.status(400).json({ msg: "Register First" })
         }
         const CheckEmail = await bcrypt.compare(password, result[0].password)
