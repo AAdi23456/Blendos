@@ -1,29 +1,70 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../Database/MySql');
-
+const socketIO = require('socket.io'); // Import Socket.IO
 const Authorization = require('../middleware/Authentication');
 const CryptoJS = require('crypto-js');
 
-router.post('/messages', Authorization, (req, res) => {
-  const { sender, to_user, message, id,userid } = req.body;
-  console.log(sender);
+// Create a new Socket.IO server instance and attach it to the router
+const io = socketIO();
 
-  const encryptedMessage = encryptMessage(message);
-  const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`, `sender_id`,`user_id`) VALUES (?, ?, ?, ?,?)';
-  db.query(sql, [sender, to_user, encryptedMessage, id,userid], (err, result) => {
-    if (err) {
-      console.error('Error creating message:', err);
-      res.status(500).json({ error: 'Internal server error' });
-      return;
-    }
-    res.json({ message: 'Message created successfully' });
+// Attach the socket.io instance to the router
+router.io = io;
+
+// Socket.IO event handling
+io.on('connection', (socket) => {
+  console.log('A user connected to the chatt.');
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected from the chat.');
+  });
+});
+io.on('chatMessage', (messageData) => {
+  const { sender, to_user, message, senderid, userid } = messageData;
+  console.log(messageData);
+})
+router.post('/messages', (req, res) => {
+ 
+router.io.on('connection', (socket) => {
+  console.log('A user connected to the chatttt.');
+
+  socket.on('chatMessage', (messageData) => {
+    const { sender, to_user, message, senderid, userid } = messageData;
+    console.log(messageData);
+
+  
+    const encryptedMessage = encryptMessage(message);
+    const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`, `sender_id`, `user_id`) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [sender, to_user, encryptedMessage, senderid, userid], (err, result) => {
+      if (err) {
+        console.error('Error creating message:', err);
+        return;
+      }
+
+      // Emit the message to all connected clients on the /messages route
+      router.io.emit('chatMessage', {
+        sender,
+        to_user,
+        message: decryptMessage(encryptedMessage), // Send the decrypted message
+        senderid,
+        userid,
+      });
+    });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('A user disconnected from the chat.');
   });
 });
 
-router.get('/messages', Authorization, (req, res) => {
-  console.log(req.body);
-  const sql = 'SELECT * FROM chat WHERE (sender_id = ? AND user_id=?) OR (user_id=? AND sender_id = ?) ORDER BY timestamp ';
+// The rest of your existing routes and functions...
+
+
+})
+
+router.get('/oldmessages',Authorization, (req, res) => {
+  //console.log(req.body+"this is userid");
+  const sql = 'SELECT * FROM chat WHERE (sender_id = ? AND user_id=?) OR (user_id=? AND sender_id = ?) ORDER BY timestamp;';
   db.query(sql, [req.body.senderid,req.body.userid,req.body.senderid,req.body.userid], (err, result) => {
     if (err) {
       console.error('Error retrieving messages:', err);
@@ -36,18 +77,33 @@ router.get('/messages', Authorization, (req, res) => {
       message: decryptMessage(message.message),
     }));
 
-    res.json({ messages: decryptedMessages });
+  return res.json({ messages: decryptedMessages });
   });
 });
-router.get('/persons', Authorization, (req, res) => {
- 
-  const sql = 'SELECT  to_user , user_id FROM chat WHERE sender_id = ?';
+router.get('/data', Authorization, (req, res) => {
+  //console.log(req.body);
+  const sql = 'SELECT * FROM users WHERE id = ?  ';
   db.query(sql, [req.body.senderid], (err, result) => {
     if (err) {
       console.error('Error retrieving messages:', err);
       res.status(500).json({ error: 'Internal server error' });
       return;
     }
+
+   //console.log(result)
+    res.json({senderid:result[0].id,sendername:result[0].Name });
+  });
+});
+router.get('/persons', Authorization, (req, res) => {
+ //console.log(req.body+"kfv");
+  const sql = 'SELECT DISTINCT user_id, to_user  FROM chat WHERE (sender_id = ? ) OR (user_id=?) ';
+  db.query(sql, [req.body.senderid,req.body.senderid], (err, result) => {
+    if (err) {
+      console.error('Error retrieving messages:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+   // console.log(result);
     res.json({ result });
   });
 });
