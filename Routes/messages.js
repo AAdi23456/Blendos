@@ -12,55 +12,55 @@ const io = socketIO();
 router.io = io;
 
 // Socket.IO event handling
-io.on('connection', (socket) => {
-  console.log('A user connected to the chatt.');
+// io.on('connection', (socket) => {
+//   console.log('A user connected to the chatt.');
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected from the chat.');
-  });
-});
-io.on('chatMessage', (messageData) => {
-  const { sender, to_user, message, senderid, userid } = messageData;
-  console.log(messageData);
-})
-router.post('/messages', (req, res) => {
+//   socket.on('disconnect', () => {
+//     console.log('A user disconnected from the chat.');
+//   });
+// });
+// io.on('chatMessage', (messageData) => {
+//   const { sender, to_user, message, senderid, userid } = messageData;
+//   console.log(messageData);
+// })
+// router.post('/messages', (req, res) => {
  
-router.io.on('connection', (socket) => {
-  console.log('A user connected to the chatttt.');
+// router.io.on('connection', (socket) => {
+//   console.log('A user connected to the chatttt.');
 
-  socket.on('chatMessage', (messageData) => {
-    const { sender, to_user, message, senderid, userid } = messageData;
-    console.log(messageData);
+  // socket.on('chatMessage', (messageData) => {
+    // const { sender, to_user, message, senderid, userid } = messageData;
+    // console.log(messageData);
 
   
-    const encryptedMessage = encryptMessage(message);
-    const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`, `sender_id`, `user_id`) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [sender, to_user, encryptedMessage, senderid, userid], (err, result) => {
-      if (err) {
-        console.error('Error creating message:', err);
-        return;
-      }
+    // const encryptedMessage = encryptMessage(message);
+    // const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`, `sender_id`, `user_id`) VALUES (?, ?, ?, ?, ?)';
+    // db.query(sql, [sender, to_user, encryptedMessage, senderid, userid], (err, result) => {
+    //   if (err) {
+    //     console.error('Error creating message:', err);
+    //     return;
+    //   }
 
-      // Emit the message to all connected clients on the /messages route
-      router.io.emit('chatMessage', {
-        sender,
-        to_user,
-        message: decryptMessage(encryptedMessage), // Send the decrypted message
-        senderid,
-        userid,
-      });
-    });
-  });
+    //   // Emit the message to all connected clients on the /messages route
+    //   router.io.emit('chatMessage', {
+    //     sender,
+    //     to_user,
+    //     message: decryptMessage(encryptedMessage), // Send the decrypted message
+    //     senderid,
+    //     userid,
+    //   });
+    // });
+//   });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected from the chat.');
-  });
-});
+//   socket.on('disconnect', () => {
+//     console.log('A user disconnected from the chat.');
+//   });
+// });
 
 // The rest of your existing routes and functions...
 
 
-})
+//})
 
 router.get('/oldmessages',Authorization, (req, res) => {
   //console.log(req.body+"this is userid");
@@ -107,11 +107,25 @@ router.get('/persons', Authorization, (req, res) => {
     res.json({ result });
   });
 });
-function encryptMessage(message) {
-  const encrypted = CryptoJS.AES.encrypt(message, 'encryption-secret-key').toString();
-  return encrypted;
-}
 
+router.get('/newperson', (req, res) => {
+ const {email}=req.body
+ if(!email){
+  return res.status(400).json({msg:"please provide the email!"})
+ }
+  const sql = 'SELECT id , Name FROM users WHERE email=?';
+  db.query(sql, [email], (err, result) => {
+    if (err) {
+      console.error('Error retrieving messages:', err);
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+
+   
+
+  return res.status(200).json(result[0]);
+  });
+});
 function decryptMessage(encryptedMessage) {
   const decryptedBytes = CryptoJS.AES.decrypt(encryptedMessage, 'encryption-secret-key');
   const decryptedMessage = decryptedBytes.toString(CryptoJS.enc.Utf8);

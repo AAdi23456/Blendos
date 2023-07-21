@@ -2,24 +2,38 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const cors = require('cors'); 
-
+const db=require("./Database/MySql")
 const MessagesRoutes = require('./Routes/messages');
 const UserRoutes = require('./Routes/users');
-
+const  {encryptMessage,decryptMessage}=require("./message-Methods/enc-dec")
 const app = express();
 app.use(cors()); 
 
 app.use(express.json());
-
 const server = http.createServer(app);
-const io = socketIO(server, { path: '/messages' }); 
-MessagesRoutes.io = io;
+const io = socketIO(server); 
 
 
 io.on('connection', (socket) => {
   console.log('A user connected');
   
-  io.on('chatMessage', (data) => {
+  socket.on('chatMessage', (data) => {
+    const { sender, to_user, message, senderid, userid } = data;
+    const encryptedMessage = encryptMessage(message);
+    const sql = 'INSERT INTO chat (`sender`, `to_user`, `message`, `sender_id`, `user_id`) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [sender, to_user, encryptedMessage, senderid, userid], (err, result) => {
+      if (err) {
+        console.error('Error creating message:', err);
+        return;
+      }
+      io.emit('chatMessage', {
+        sender,
+        to_user,
+        message: decryptMessage(encryptedMessage), 
+        senderid,
+        userid,
+      });
+    });
     console.log(data);
   });
   socket.on('disconnect', () => {
